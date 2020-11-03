@@ -42,35 +42,34 @@ class Solve:
         print("Solve with a local search algorithm")
         print("initial state all generators are available, and the devices are associated to the closest one")
         maxIteration = self.n_generator -1
-        #état initial
+        # Etat initial
         available_generators = [i for i in range(self.n_generator)]
         assigned_generators = [None for _ in range(self.n_device)]
         current_state = State(available_generators,assigned_generators)
         current_state.generate_state(self.n_device, self.n_generator, self.instance)
         self.instance.solution_checker(current_state.assigned_generators, current_state.opened_generators)
-        # conditions d'arrets
+        # Conditions d'arrets
         itteration = 0
         stopSearch = False
         while itteration < maxIteration and not stopSearch:
             neighborhood = []
-            #Fonction de validation
             for generator in current_state.available_generators:
+                # Voisin
                 next_state = State([i for i in current_state.available_generators if i != generator], [None for _ in range(self.n_device)])
-                # Fonction d’évaluation
                 next_state.generate_state(self.n_device, self.n_generator, self.instance)
 
+                # Fonction de validation
                 if (next_state.total_cost <= current_state.total_cost) :
-                    #etat valide
+                    # Voisin valide
                     neighborhood.append(next_state)
             if(len(neighborhood) == 0):
-                #solustion trouvé, arret de la recherche
+                # Solution trouvee, arret de la recherche
                 stopSearch = True
             else:
-                #Fonction de sélection
+                # Fonction de selection
                 for neighbor in neighborhood:
-
                     if(neighbor.total_cost <= current_state.total_cost):
-                        # un meilleur etat a ete trouvé
+                        # Un meilleur etat a ete trouve
                         current_state = neighbor
                 self.instance.solution_checker(current_state.assigned_generators, current_state.opened_generators)
             itteration += 1
@@ -81,12 +80,8 @@ class Solve:
         print("[OPENED-GENERATOR]", current_state.opened_generators)
         print("[SOLUTION-COST]", current_state.total_cost)
         self.instance.plot_solution(current_state.assigned_generators, current_state.opened_generators)
-        print(self.instance.opening_cost)
-    def validate(self):
-        None
+        # print(self.instance.opening_cost)
 
-    def select(self):
-        None
 
 
 

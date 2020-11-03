@@ -22,9 +22,9 @@ constraint forall(i in 1..n)(forall(j in 1..n-2)(sum(k in 0..2)(x[j+k,i]) != 3))
 constraint forall(i in 1..n)(forall(j in 1..n-2)(sum(k in 0..2)(x[i,j+k]) != 0));
 constraint forall(i in 1..n)(forall(j in 1..n-2)(sum(k in 0..2)(x[j+k,i]) != 0));
  
-constraint forall(k in 1..n)(forall(j in k+1..n)(exists(i in 1..n)(x[i,k] != x[i,j])));
+% No identical rows and no identical columns
 constraint forall(k in 1..n)(forall(j in k+1..n)(exists(i in 1..n)(x[k,i] != x[j,i])));
-%constraint forall(k in 1..n)(exists(i in 1..n)(forall(j in k+1..n)(x[i,k] != x[i,j])));
+constraint forall(k in 1..n)(forall(j in k+1..n)(exists(i in 1..n)(x[i,k] != x[i,j])));
   
 output [
    if j = 1 then "\n" else " " endif ++

@@ -11,6 +11,12 @@ array[1..n] of int: down_vision = [3,4,2,1,2];
 % Variable: value for each cell
 array[1..n,1..n] of var 1..n: city;
 
+constraint forall(i in 1..n)(all_different([city[i,j] | j in 1..n]));
+constraint forall(i in 1..n)(all_different([city[j,i] | j in 1..n]));
+
+constraint forall(i in 1..n)((count(j in 1..n-1)(city[i,j]<city[i,j+1]) = left_vision[i]));
+constraint forall(i in 1..n)((count(j in 1..n-1)(city[i,j]>city[i,j+1]) = right_vision[i]));
+
 output
 ["city:"]++
 [

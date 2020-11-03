@@ -4,6 +4,9 @@
     ],
     "openTab": 0,
     "projectFiles": [
+        "data/hell-cas1.dzn",
+        "data/hell-cas2.dzn",
+        "data/hell-cas3.dzn",
         "data/normal-cas1.dzn",
         "data/normal-cas2.dzn",
         "data/normal-cas3.dzn",

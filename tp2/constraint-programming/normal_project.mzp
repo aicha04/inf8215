@@ -1,0 +1,16 @@
+{
+    "openFiles": [
+        "normal.mzn"
+    ],
+    "openTab": 0,
+    "projectFiles": [
+        "data/normal-cas1.dzn",
+        "data/normal-cas2.dzn",
+        "data/normal-cas3.dzn",
+        "nightmare.mzn",
+        "normal.mzn"
+    ],
+    "selectedBuiltinConfigId": "org.gecode.gecode",
+    "selectedBuiltinConfigVersion": "6.3.0",
+    "version": 106
+}

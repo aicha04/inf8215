@@ -28,7 +28,6 @@ class Solve:
                                                                       self.instance.generator_coordinates[j][0],
                                                                       self.instance.generator_coordinates[j][1])
                                     )
-
             assigned_generators[i] = closest_generator
 
         self.instance.solution_checker(assigned_generators, opened_generators)
@@ -40,35 +39,39 @@ class Solve:
         print("[SOLUTION-COST]", total_cost)
 
     def solve_local_search(self):
+        print("Solve with a local search algorithm")
+        print("initial state all generators are available, and the devices are associated to the closest one")
         maxIteration = self.n_generator -1
+        #état initial
         available_generators = [i for i in range(self.n_generator)]
         assigned_generators = [None for _ in range(self.n_device)]
         current_state = State(available_generators,assigned_generators)
         current_state.generate_state(self.n_device, self.n_generator, self.instance)
         self.instance.solution_checker(current_state.assigned_generators, current_state.opened_generators)
+        # conditions d'arrets
         itteration = 0
         stopSearch = False
         while itteration < maxIteration and not stopSearch:
             neighborhood = []
-            #
+            #Fonction de validation
             for generator in current_state.available_generators:
                 next_state = State([i for i in current_state.available_generators if i != generator], [None for _ in range(self.n_device)])
+                # Fonction d’évaluation
                 next_state.generate_state(self.n_device, self.n_generator, self.instance)
 
                 if (next_state.total_cost <= current_state.total_cost) :
+                    #etat valide
                     neighborhood.append(next_state)
             if(len(neighborhood) == 0):
+                #solustion trouvé, arret de la recherche
                 stopSearch = True
             else:
+                #Fonction de sélection
                 for neighbor in neighborhood:
 
                     if(neighbor.total_cost <= current_state.total_cost):
+                        # un meilleur etat a ete trouvé
                         current_state = neighbor
-                print(itteration)
-                print("[AVAILABLE-GENERATORS]   ", current_state.available_generators)
-                # print("[ASSIGNED-GENERATOR]", current_state.assigned_generators)
-                print("[OPENED-GENERATOR]   ", [i for i in range(self.n_generator) if current_state.opened_generators[i] == 1])
-                print("[SOLUTION-COST]", current_state.total_cost)
                 self.instance.solution_checker(current_state.assigned_generators, current_state.opened_generators)
             itteration += 1
 

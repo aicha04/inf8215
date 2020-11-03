@@ -5,7 +5,9 @@ class State:
         self.opened_generators = None
         self.total_cost = None
     def generate_state(self, n_device, n_generator, instance):
+        # trouver les generateurs disponibles les plus pres aux machine
         for i in range(n_device):
+
             closest_generator = min(self.available_generators,
                                     key=lambda j: instance.get_distance(instance.device_coordinates[i][0],
                                                                              instance.device_coordinates[i][1],
@@ -14,5 +16,5 @@ class State:
                                     )
             self.assigned_generators[i] = closest_generator
         self.opened_generators = [1 if i in self.assigned_generators else 0 for i in range(n_generator)]
-
+        #calcul du cout total
         self.total_cost = instance.get_solution_cost(self.assigned_generators, self.opened_generators)

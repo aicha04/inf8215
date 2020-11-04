@@ -14,14 +14,8 @@ function var int: mesure(int: i, int:coord) = coords[i,coord]+shape[i,coord]-1;
 constraint forall(i in 1..n_object)(mesure(i,1) <= max_length);
 constraint forall(i in 1..n_object)(mesure(i,2) <= max_width);
 constraint length = sum(i in 1..n_object)(shape[i,1]);
-%constraint length = max([mesure(i,1) | i in 1..n_object]);
 constraint width = max([mesure(i,2) | i in 1..n_object]);
 constraint forall(i in 1..n_object)(coords[i,1] = sum(j in 1..i)(shape[j,1]));
-
-%constraint forall(i in 1..n_object)(coords[i,1]+shape[i,1]-1 <= max_length);
-%constraint forall(i in 1..n_object)(coords[i,2]+shape[i,2]-1 <= max_width);
-%constraint length = max([coords[i,1]+shape[i,1]-1 | i in 1..n_object]);
-%constraint width = max([coords[i,2]+shape[i,2]-1 | i in 1..n_object]);
 
 solve satisfy;
 

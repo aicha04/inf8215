@@ -1,4 +1,3 @@
-
 from generator_problem import GeneratorProblem
 from state import State
 

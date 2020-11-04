@@ -1,4 +1,3 @@
-
 include "globals.mzn"; 
    
 % Parameters of the problems
@@ -19,6 +18,9 @@ constraint forall(i in 1..n)(count(j in 1..n)(count(k in 1..n where k<j)(city[i,
 constraint forall(i in 1..n)(count(j in 1..n)(count(k in 1..n where k>j)(city[i,j]>city[i,k])= 5-j)=down_vision[i]);
 constraint forall(j in 1..n)(count(i in 1..n)(count(k in 1..n where k<i)(city[i,j]>city[k,j])= i-1)=left_vision[j]);
 constraint forall(j in 1..n)(count(i in 1..n)(count(k in 1..n where k>i)(city[i,j]>city[k,j])= 5-i)=right_vision[j]);
+
+solve satisfy; 
+
 output
 ["city:"]++
 [

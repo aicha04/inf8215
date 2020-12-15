@@ -1,5 +1,5 @@
 import pandas as pd
-
+import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import SGD
@@ -20,11 +20,28 @@ data_train = data_train.drop(0, axis=1)
 last_column = data_train.columns[-1]
 Y = data_train[last_column]
 X = data_train.drop(last_column, axis=1)
-# # Loading it into a numpy array
+numberFeature = X.shape[1]
+#normalisation of features
+print(X.shape)
+mean = X.mean()
+var = X.var()
+for i in range(1,numberFeature+1):
+
+    if(var[i] !=0):
+        X[i] = (X[i]-mean[i])/var[i]
+
+
+
+# isnull=X.isnull().sum()
+# for i in range(1,len(isnull)+1):
+#     if(isnull[i]!=0):
+#         print(i, isnull[i],var[i])
+
+# Loading it into a numpy array
 X = X.to_numpy()
 Y = Y.to_numpy()
 Y = Y == "phishing"
-numberFeature = X.shape[1]
+assert not np.any(np.isnan(X))
 # Separating the features and the true value(x,y)
 data_test = data_test.drop(0, axis=1)
 X_test = data_test
@@ -45,7 +62,7 @@ model = Sequential(name="DNN")
 model.add(Dense(5, input_dim=int(numberFeature), activation='relu', name='dense_1'))
 model.add(Dense(6, input_dim=5, activation='relu', name='dense_2'))
 model.add(Dense(8, input_dim=6, activation='relu', name='dense_3'))
-model.add(Dense(5, input_dim=10, activation='relu', name='dense_4'))
+model.add(Dense(5, input_dim=8, activation='relu', name='dense_4'))
 model.add(Dense(1, input_dim=5, activation='sigmoid', name='dense_5'))
 
 opt = SGD(learning_rate=0.001)  # Stochastic Gradient descent
@@ -61,7 +78,7 @@ plt.plot(history.history['val_loss'], label='Validation Loss')
 plt.title('Training curve')
 plt.ylabel('Loss')
 plt.xlabel('No. epoch')
-plt.axis([0, 2000, 0, 1])
+plt.axis([0, 700, 0, 1])
 plt.legend()
 plt.savefig("loss")
 plt.show()
@@ -71,7 +88,7 @@ plt.plot(history.history['val_accuracy'], label='Validation')
 plt.title('Training curve')
 plt.ylabel('Accuracy')
 plt.xlabel('No. epoch')
-plt.axis([0, 2000, 0, 1])
+plt.axis([0, 700, 0, 1])
 plt.legend()
 plt.savefig("accuracy")
 plt.show()

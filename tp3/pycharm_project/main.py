@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import sklearn
 from keras.models import Sequential
-from keras.layers import Dense, Activation
+from keras.layers import Dense, Activation, Dropout
 from keras.optimizers import SGD
 from keras.utils.vis_utils import plot_model
 from tensorflow.keras import regularizers
@@ -21,7 +21,13 @@ class DeepLearning:
         model.add(Dense(numberNodes[0], input_dim=int(numberFeatures), activation='relu', name='dense_0'))
         for i in range(1, numberLayers):
 
-            model.add(Dense(numberNodes[i], input_dim=numberNodes[i-1], activation='relu', name='dense_'+str(i),kernel_regularizer=regularizers.l2( l=0.01)))
+            model.add(Dense(numberNodes[i], input_dim=numberNodes[i-1], activation='relu', name='dense_'+str(i),
+                            #kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4)
+                            kernel_regularizer=regularizers.l2( l=0.01),
+                            bias_regularizer=regularizers.l2(l=0.01),
+                            activity_regularizer=regularizers.l2( l=0.01)
+                            ))
+            model.add(Dropout(0.5))
         model.add(Dense(1, input_dim=numberNodes[numberLayers-1], activation='sigmoid', name='dense_'+str(numberLayers)))
         return model
     def deepLearning(self, learningRate, numberFeatures, X_train, Y_train, X_validation, Y_validation, epochs, batch_size, numberLayers, numberNodes):
@@ -163,6 +169,6 @@ print(len(Y_validation))
 dl = DeepLearning()
 # bach_sizes = [32, 48, 64, 80, 96, 112, 128]
 # epoches = [500, 500, 700, 700, 1000, 1000, 1500]
-numberNodes = [5,10,10,8,6,5]
-numberLayers = 6
+numberNodes = [32,4,10]
+numberLayers = 3
 dl.deepLearning(0.001, numberFeature, X_train, Y_train, X_validation, Y_validation, 1200, 32, numberLayers, numberNodes)

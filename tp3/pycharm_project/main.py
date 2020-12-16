@@ -86,6 +86,9 @@ class DeepLearning:
         df = df.append({"idx": "train", "status": accuracy1}, ignore_index=True)
         df = df.append({"idx": "validate", "status": accuracy2}, ignore_index=True)
         df = df.append({"idx": "all", "status": accuracy3}, ignore_index=True)
+        df = df.append({"idx": "layers", "status": numberNodes}, ignore_index=True)
+        df = df.append({"idx": "epoch", "status": epochs}, ignore_index=True)
+        df = df.append({"idx": "batch size", "status": batch_size}, ignore_index=True)
         df.to_csv("data/predictions.csv", index=False)
         Y_pred = model.predict(X_test)
         Y_pred = (Y_pred > 0.5)
@@ -127,8 +130,6 @@ for i in range(1,numberFeature+1):
     if(var[i] !=0):
         X[i] = (X[i]-mean[i])/var[i]
 
-
-
 # isnull=X.isnull().sum()
 # for i in range(1,len(isnull)+1):
 #     if(isnull[i]!=0):
@@ -142,14 +143,25 @@ assert not np.any(np.isnan(X))
 # Separating the features and the true value(x,y)
 data_test = data_test.drop(0, axis=1)
 X_test = data_test
+
+#normalisation of features
+mean_test = X_test.mean()
+var_test = X_test.var()
+for i in range(1,numberFeature+1):
+
+    if(var_test[i] !=0):
+        X_test[i] = (X_test[i]-mean_test[i])/var_test[i]
+
+# assert not np.any(np.isnan(X_test))
+
 # Loading it into a numpy array
 X_test = X_test.to_numpy()
 
-X_train, X_validation, Y_train, Y_validation = train_test_split(X, Y, test_size=0.01)
+X_train, X_validation, Y_train, Y_validation = train_test_split(X, Y, test_size=0.25)
 print(len(Y_validation))
 dl = DeepLearning()
 # bach_sizes = [32, 48, 64, 80, 96, 112, 128]
 # epoches = [500, 500, 700, 700, 1000, 1000, 1500]
-numberNodes = [5, 12, 10,5]
+numberNodes = [5,12,10,5]
 numberLayers = 4
 dl.deepLearning(0.001, numberFeature, X_train, Y_train, X_validation, Y_validation, 1100, 64, numberLayers, numberNodes)

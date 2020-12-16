@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import sklearn
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import SGD
@@ -14,14 +15,16 @@ from sklearn.metrics import confusion_matrix
 class DeepLearning:
     def __init__(self):
         None
-    def deepLearning(self, learningRate, numberFeature, X_train, Y_train, X_validation, Y_validation, epochs, batch_size):
+    def model(self, numberFeatures, numberLayers, numberNodes):
         model = Sequential(name="DNN")
+        model.add(Dense(numberNodes[0], input_dim=int(numberFeatures), activation='relu', name='dense_0'))
+        for i in range(1, numberLayers):
 
-        model.add(Dense(5, input_dim=int(numberFeature), activation='relu', name='dense_1'))
-        model.add(Dense(6, input_dim=5, activation='relu', name='dense_2'))
-        model.add(Dense(8, input_dim=6, activation='relu', name='dense_3'))
-        model.add(Dense(5, input_dim=8, activation='relu', name='dense_4'))
-        model.add(Dense(1, input_dim=5, activation='sigmoid', name='dense_5'))
+            model.add(Dense(numberNodes[i], input_dim=numberNodes[i-1], activation='relu', name='dense_'+str(i)))
+        model.add(Dense(1, input_dim=numberNodes[numberLayers-1], activation='sigmoid', name='dense_'+str(numberLayers)))
+        return model
+    def deepLearning(self, learningRate, numberFeatures, X_train, Y_train, X_validation, Y_validation, epochs, batch_size, numberLayers, numberNodes):
+        model = self.model(numberFeatures,numberLayers, numberNodes)
 
         opt = SGD(learning_rate=learningRate)  # Stochastic Gradient descent
 
@@ -36,7 +39,7 @@ class DeepLearning:
         plt.title('Training curve')
         plt.ylabel('Loss')
         plt.xlabel('No. epoch')
-        plt.axis([0, 700, 0, 1])
+        plt.axis([0, epochs, 0, 1])
         plt.legend()
         plt.savefig("loss")
         plt.show()
@@ -46,44 +49,31 @@ class DeepLearning:
         plt.title('Training curve')
         plt.ylabel('Accuracy')
         plt.xlabel('No. epoch')
-        plt.axis([0, 700, 0, 1])
+        plt.axis([0, epochs, 0, 1])
         plt.legend()
         plt.savefig("accuracy")
         plt.show()
 
         Y_pred = model.predict(X_train)
         Y_pred = (Y_pred > 0.5)
-        confusion_matrix1 = confusion_matrix(Y_train, Y_pred)
-        TN = confusion_matrix1[0][0]
-        TP = confusion_matrix1[1][1]
-        FP = confusion_matrix1[0][1]
-        FN = confusion_matrix1[1][0]
+
         # if(confusion_matrix):
-        accuracy = (TP+TN)/(TP+TN+FP+FN)
-        print("train data: ", accuracy)
+        accuracy1 = self.accuracy(Y_train, Y_pred)
+        print("train data: ", accuracy1)
 
         Y_pred = model.predict(X_validation)
         Y_pred = (Y_pred > 0.5)
-        confusion_matrix2 = confusion_matrix(Y_validation, Y_pred)
-        TN = confusion_matrix2[0][0]
-        TP = confusion_matrix2[1][1]
-        FP = confusion_matrix2[0][1]
-        FN = confusion_matrix2[1][0]
+
         # if(confusion_matrix):
-        accuracy = (TP+TN)/(TP+TN+FP+FN)
-        print("validation data: ",accuracy)
+        accuracy2 = self.accuracy(Y_validation, Y_pred)
+        print("validation data: ",accuracy2)
 
         Y_pred = model.predict(X)
         Y_pred = (Y_pred > 0.5)
-        confusion_matrix3 = confusion_matrix(Y, Y_pred)
-        TN = confusion_matrix3[0][0]
-        TP = confusion_matrix3[1][1]
-        FP = confusion_matrix3[0][1]
-        FN = confusion_matrix3[1][0]
+
         # if(confusion_matrix):
-        accuracy = (TP+TN)/(TP+TN+FP+FN)
-        print("all data: ",accuracy)
-        print(TP, TN)
+        accuracy3 = self.accuracy(Y, Y_pred)
+        print("all data: ",accuracy3)
 
         df = pd.DataFrame(columns=['idx', 'status'])
         i = 0
@@ -93,6 +83,9 @@ class DeepLearning:
             else:
                 df = df.append({"idx": i, "status": "legitimate"}, ignore_index=True)
             i += 1
+        df = df.append({"idx": "train", "status": accuracy1}, ignore_index=True)
+        df = df.append({"idx": "validate", "status": accuracy2}, ignore_index=True)
+        df = df.append({"idx": "all", "status": accuracy3}, ignore_index=True)
         df.to_csv("data/predictions.csv", index=False)
         Y_pred = model.predict(X_test)
         Y_pred = (Y_pred > 0.5)
@@ -105,6 +98,15 @@ class DeepLearning:
                 df2 = df2.append({"idx": i, "status": "legitimate"}, ignore_index=True)
             i += 1
         df2.to_csv("data/submission.csv", index=False)
+    def accuracy(self, Y_true, Y_pred):
+        confusion_matrix = sklearn.metrics.confusion_matrix(Y_true, Y_pred)
+        TN = confusion_matrix[0][0]
+        TP = confusion_matrix[1][1]
+        FP = confusion_matrix[0][1]
+        FN = confusion_matrix[1][0]
+        accuracy = (TP+TN)/(TP+TN+FP+FN)
+        return accuracy
+
 
 # Loading the data and checking its dimension
 data_train = pd.read_csv('data/train.csv', header=None, skiprows=1)
@@ -143,7 +145,11 @@ X_test = data_test
 # Loading it into a numpy array
 X_test = X_test.to_numpy()
 
-X_train, X_validation, Y_train, Y_validation = train_test_split(X, Y, test_size=0.01, random_state=42)
+X_train, X_validation, Y_train, Y_validation = train_test_split(X, Y, test_size=0.01)
+print(len(Y_validation))
 dl = DeepLearning()
-dl.deepLearning(0.001, numberFeature, X_train, Y_train, X_validation, Y_validation, 700, 64)
-
+# bach_sizes = [32, 48, 64, 80, 96, 112, 128]
+# epoches = [500, 500, 700, 700, 1000, 1000, 1500]
+numberNodes = [5, 12, 10,5]
+numberLayers = 4
+dl.deepLearning(0.001, numberFeature, X_train, Y_train, X_validation, Y_validation, 1100, 64, numberLayers, numberNodes)

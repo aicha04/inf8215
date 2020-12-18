@@ -2,6 +2,8 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -58,7 +60,81 @@ def cross_validation(features, labels, random):
 
     return (np.mean(scores),rf)
 
-def predict_usage():
+def create_grid():
+    # Number of trees in random forest
+    n_estimators = [int(x) for x in np.linspace(start = 200, stop = 2000, num = 10)]
+    # Number of features to consider at every split
+    max_features = ['auto', 'sqrt']
+    # Maximum number of levels in tree
+    max_depth = [int(x) for x in np.linspace(10, 110, num = 11)]
+    max_depth.append(None)
+    # Minimum number of samples required to split a node
+    min_samples_split = [2, 5, 10]
+    # Minimum number of samples required at each leaf node
+    min_samples_leaf = [1, 2, 4]
+    # Method of selecting samples for training each tree
+    bootstrap = [True, False]# Create the random grid
+    random_grid = {'n_estimators': n_estimators,
+                'max_features': max_features,
+                'max_depth': max_depth,
+                'min_samples_split': min_samples_split,
+                'min_samples_leaf': min_samples_leaf,
+                'bootstrap': bootstrap}
+    return random_grid
+
+def grid_search():
+    (X,Y,feature_list) = get_data()
+    # Create the parameter grid based on the results of random search 
+    param_grid = {
+        'bootstrap': [False],
+        'max_depth': [None],
+        'max_features': [2, 3],
+        'min_samples_leaf': [1,2,3],
+        'min_samples_split': [2,3,4],
+        'n_estimators': [100, 200, 300, 1000]
+    }
+    # Create a based model
+    rf = RandomForestClassifier()# Instantiate the grid search model
+    grid_search = GridSearchCV(estimator = rf, param_grid = param_grid, 
+                            cv = 3, n_jobs = -1, verbose = 2)
+
+    # Fit the grid search to the data
+    grid_search.fit(X,Y)
+    print(grid_search.best_params_)
+
+    best_grid = grid_search.best_estimator_
+    scores = cross_val_score(best_grid, X, Y, cv=5)
+    print(scores)
+    print("Mean 5-Fold R Squared: {}".format(np.mean(scores)))
+
+def find_hyperparameters():
+    (X,Y,feature_list) = get_data()
+    rf = RandomForestClassifier(n_estimators=400, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', max_depth=None, bootstrap=False)
+    rf.fit(X, Y)
+
+    scores = cross_val_score(rf, X, Y, cv=5)
+    print(scores)
+    print("Mean 5-Fold R Squared: {}".format(np.mean(scores)))
+
+#{'n_estimators': 400, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt', 'max_depth': None, 'bootstrap': False}
+def random_search():
+    (X,Y,feature_list) = get_data()
+    random_grid = create_grid()
+    # Use the random grid to search for best hyperparameters
+    # First create the base model to tune
+    rf = RandomForestClassifier()
+    # Random search of parameters, using 3 fold cross validation, 
+    # search across 100 different combinations, and use all available cores
+    rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid, n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)# Fit the random search model
+    rf_random.fit(X, Y)
+    print(rf_random.best_params_)
+
+    best_random = rf_random.best_estimator_
+    scores = cross_val_score(best_random, X, Y, cv=5)
+    print(scores)
+    print("Mean 5-Fold R Squared: {}".format(np.mean(scores)))
+
+def get_data():
     # Loading the data and checking its dimension
     data_train = pd.read_csv('data/train.csv', header=None, skiprows=1)
 
@@ -85,13 +161,17 @@ def predict_usage():
     Y = Y == "phishing"
     assert not np.any(np.isnan(X))
 
+    return (X,Y,feature_list)
+
+def predict_usage():
+    (X,Y,feature_list) = get_data()
     # X_train, X_validation, Y_train, Y_validation = train_test_split(X, Y, test_size=0.10)
     # print('Training Features Shape:', X_train.shape)
     # print('Training Labels Shape:', Y_train.shape)
     # print('Validating Features Shape:', X_validation.shape)
     # print('Validating Labels Shape:', Y_validation.shape)
     
-    (score,rf) = cross_validation(X,Y,42)
+    #(score,rf) = cross_validation(X,Y,42)
     # number = [3, 17, 24, 39, 55]
     # scores = []
     # for i in number:
@@ -153,5 +233,5 @@ def predict_usage():
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     plt.switch_backend('agg')
-    predict_usage()
+    grid_search()
 
